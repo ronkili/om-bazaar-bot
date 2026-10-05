@@ -1,0 +1,66 @@
+COMMUNITY BOT — RAILWAY
+
+FILES:
+- index.js
+- deploy-commands.js
+- config.js
+- package.json
+
+ENV:
+TOKEN=your_bot_token
+
+VOLUME:
+/app/data
+
+START COMMAND:
+npm run deploy && npm start
+
+DISCORD DEVELOPER PORTAL -> BOT:
+Enable:
+- SERVER MEMBERS INTENT
+- MESSAGE CONTENT INTENT
+
+BOT PERMISSIONS:
+- View Channels
+- Send Messages
+- Embed Links
+- Attach Files
+- Read Message History
+- Manage Channels
+- Manage Roles
+- Manage Messages
+- Moderate Members
+
+ROLE ORDER:
+The bot role must be ABOVE the Member role and users it may moderate.
+
+VERIFY:
+1. Fill memberRoleId.
+2. Put only writable community channel IDs inside verifyWritableChannelIds.
+3. Run /setup-verify INSIDE the Verify channel.
+
+Result:
+- Verify stays public/read-only.
+- Public rooms become Member-only.
+- IDs in verifyWritableChannelIds: Members can write.
+- Other public text rooms: Members can read but cannot write.
+- Existing private Staff/Admin rooms stay private.
+
+TICKETS:
+/ticket-panel
+
+Options:
+- עזרה מצוות 🆘
+- רכישת משתמש 💵
+- הצעת שיתוף פעולה 🤝
+
+HELP:
+!h
+!h <reason>
+
+Staff can Claim the Help request.
+
+MODERATION — MANAGEMENT ONLY:
+/timeout
+/untimeout
+/clear
