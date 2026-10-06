@@ -31,7 +31,8 @@ const client = new Client({
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMembers,
     GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent
+    GatewayIntentBits.MessageContent,
+    GatewayIntentBits.GuildVoiceStates
   ]
 });
 
@@ -1215,6 +1216,11 @@ async function sendHelpRequest(
             "",
             `👤 **משתמש:** ${message.author}`,
             `📝 **סיבה:** ${reason || "לא נכתבה סיבה"}`,
+            `🎙️ **Voice:** ${
+              message.member?.voice?.channel
+                ? `${message.member.voice.channel}`
+                : "לא מחובר לוויס"
+            }`,
             "",
             "📌 **סטטוס:** ממתין לצוות",
             "🛡️ **מטפל:** עדיין לא נלקח"
@@ -1802,20 +1808,26 @@ client.on(
         const original =
           interaction.message.embeds[0];
 
+        const updatedDescription =
+          String(
+            original.description || ""
+          )
+            .replace(
+              "📌 **סטטוס:** ממתין לצוות",
+              "📌 **סטטוס:** ✅ בטיפול"
+            )
+            .replace(
+              "🛡️ **מטפל:** עדיין לא נלקח",
+              `🛡️ **מטפל:** ${interaction.user}`
+            );
+
         const embed =
           EmbedBuilder.from(
             original
           )
             .setColor("Green")
             .setDescription(
-              [
-                "### בקשת עזרה חדשה 🆘",
-                "",
-                `👤 **משתמש:** <@${requesterId}>`,
-                "",
-                "📌 **סטטוס:** ✅ בטיפול",
-                `🛡️ **מטפל:** ${interaction.user}`
-              ].join("\n")
+              updatedDescription
             );
 
         return interaction.update({
