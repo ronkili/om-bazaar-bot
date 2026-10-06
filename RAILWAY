@@ -64,3 +64,9 @@ MODERATION — MANAGEMENT ONLY:
 /timeout
 /untimeout
 /clear
+
+
+HELP VOICE:
+- !h shows the requester's current Voice channel.
+- If not in Voice, it shows: לא מחובר לוויס
+- Reason + Voice remain visible after Staff Claim.
