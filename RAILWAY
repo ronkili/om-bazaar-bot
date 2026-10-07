@@ -70,3 +70,39 @@ HELP VOICE:
 - !h shows the requester's current Voice channel.
 - If not in Voice, it shows: לא מחובר לוויס
 - Reason + Voice remain visible after Staff Claim.
+
+
+XP + CASINO — ZONE X STYLE:
+- Normal chat messages earn XP.
+- Default: 5-15 XP per eligible message.
+- XP cooldown: 60 seconds.
+
+Commands:
+- !xp
+- !balance
+- !bal
+- !xphelp
+- !casino
+- !coinflip <xp> <heads/tails>
+- !cf <xp> <heads/tails>
+- !dice <xp> <1-6>
+- !slots <xp>
+
+Staff XP:
+- !addxp @user <amount>
+- !removexp @user <amount>
+- !setxp @user <amount>
+
+XP SHOP:
+1. Fill xpShop role IDs / names / prices in config.js.
+2. Put the bot role ABOVE every shop role.
+3. Run /setup-xp-shop.
+
+Users buy with buttons only.
+XP is deducted only AFTER the role is successfully given.
+
+XP DATA:
+/app/data/xp.json
+
+Casino and XP are virtual server points only.
+No real-money purchase and no cashout.
