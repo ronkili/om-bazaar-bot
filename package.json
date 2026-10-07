@@ -1,7 +1,7 @@
 {
   "name": "community-support-bot",
-  "version": "1.0.0",
-  "description": "Community Discord bot with tickets, automatic verify, Zone X style help and management-only moderation",
+  "version": "1.1.0",
+  "description": "Community Discord bot with tickets, automatic verify, Zone X style help, XP casino, button XP shop and management moderation",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
