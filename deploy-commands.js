@@ -11,6 +11,128 @@ const config = require("./config");
 const commands = [
   new SlashCommandBuilder()
     .setName(
+      "casino"
+    )
+    .setDescription(
+      "מציג את פקודות הקזינו"
+    ),
+
+  new SlashCommandBuilder()
+    .setName(
+      "coinflip"
+    )
+    .setDescription(
+      "הימור Coinflip עם XP"
+    )
+    .addIntegerOption(
+      option =>
+        option
+          .setName(
+            "amount"
+          )
+          .setDescription(
+            "כמות XP להימור"
+          )
+          .setRequired(
+            true
+          )
+          .setMinValue(
+            1
+          )
+    )
+    .addStringOption(
+      option =>
+        option
+          .setName(
+            "side"
+          )
+          .setDescription(
+            "Heads או Tails"
+          )
+          .setRequired(
+            true
+          )
+          .addChoices(
+            {
+              name: "Heads",
+              value: "heads"
+            },
+            {
+              name: "Tails",
+              value: "tails"
+            }
+          )
+    ),
+
+  new SlashCommandBuilder()
+    .setName(
+      "dice"
+    )
+    .setDescription(
+      "נחש מספר בקובייה עם XP"
+    )
+    .addIntegerOption(
+      option =>
+        option
+          .setName(
+            "amount"
+          )
+          .setDescription(
+            "כמות XP להימור"
+          )
+          .setRequired(
+            true
+          )
+          .setMinValue(
+            1
+          )
+    )
+    .addIntegerOption(
+      option =>
+        option
+          .setName(
+            "number"
+          )
+          .setDescription(
+            "בחר מספר בין 1 ל־6"
+          )
+          .setRequired(
+            true
+          )
+          .setMinValue(
+            1
+          )
+          .setMaxValue(
+            6
+          )
+    ),
+
+  new SlashCommandBuilder()
+    .setName(
+      "slots"
+    )
+    .setDescription(
+      "Slots עם XP"
+    )
+    .addIntegerOption(
+      option =>
+        option
+          .setName(
+            "amount"
+          )
+          .setDescription(
+            "כמות XP להימור"
+          )
+          .setRequired(
+            true
+          )
+          .setMinValue(
+            1
+          )
+    ),
+
+  new SlashCommandBuilder()
+    .setName(
       "setup-xp-shop"
     )
     .setDescription(
