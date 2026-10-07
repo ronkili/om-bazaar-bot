@@ -106,3 +106,25 @@ XP DATA:
 
 Casino and XP are virtual server points only.
 No real-money purchase and no cashout.
+
+
+CASINO COMMANDS ARE NOW SLASH COMMANDS:
+- /casino
+- /coinflip amount:<xp> side:<heads/tails>
+- /dice amount:<xp> number:<1-6>
+- /slots amount:<xp>
+
+Removed prefix casino commands:
+- !casino
+- !coinflip
+- !cf
+- !dice
+- !slots
+
+Still using prefix:
+- !h
+- !xp / !balance / !bal
+- !xphelp
+- !addxp / !removexp / !setxp
+
+Redeploy after replacing the files so deploy-commands.js registers the new slash commands.
