@@ -1369,11 +1369,11 @@ function buildXpHelpEmbed() {
         "`!xp` / `!balance` — יתרה",
         "XP מתקבל אוטומטית מהודעות רגילות.",
         "",
-        "**Casino**",
-        "`!coinflip <xp> <heads/tails>`",
-        "`!cf <xp> <heads/tails>`",
-        "`!dice <xp> <1-6>`",
-        "`!slots <xp>`",
+        "**Casino — Slash Commands**",
+        "`/casino` — מציג את פקודות הקזינו",
+        "`/coinflip amount:<xp> side:<heads/tails>`",
+        "`/dice amount:<xp> number:<1-6>`",
+        "`/slots amount:<xp>`",
         "",
         "**XP Shop**",
         "החנות נשלחת עם `/setup-xp-shop`.",
@@ -2303,8 +2303,7 @@ client.on(
       // ---------- XP INFO ----------
 
       if (
-        command === "xphelp" ||
-        command === "casino"
+        command === "xphelp"
       ) {
         return message.reply({
           embeds: [
@@ -2343,35 +2342,6 @@ client.on(
         );
       }
 
-      // ---------- CASINO ----------
-
-      if (
-        command === "coinflip" ||
-        command === "cf"
-      ) {
-        return playCoinflip(
-          message,
-          args
-        );
-      }
-
-      if (
-        command === "dice"
-      ) {
-        return playDice(
-          message,
-          args
-        );
-      }
-
-      if (
-        command === "slots"
-      ) {
-        return playSlots(
-          message,
-          args
-        );
-      }
     } catch (error) {
       console.error(
         "❌ Message command error:",
@@ -2413,6 +2383,126 @@ client.on(
       if (
         interaction.isChatInputCommand()
       ) {
+        if (
+          interaction.commandName ===
+          "casino"
+        ) {
+          return interaction.reply({
+            embeds: [
+              buildXpHelpEmbed()
+            ]
+          });
+        }
+
+        if (
+          interaction.commandName ===
+          "coinflip"
+        ) {
+          const amount =
+            interaction.options
+              .getInteger(
+                "amount",
+                true
+              );
+
+          const side =
+            interaction.options
+              .getString(
+                "side",
+                true
+              );
+
+          const slashMessage = {
+            guild:
+              interaction.guild,
+            author:
+              interaction.user,
+            reply:
+              payload =>
+                interaction.reply(
+                  payload
+                )
+          };
+
+          return playCoinflip(
+            slashMessage,
+            [
+              String(amount),
+              side
+            ]
+          );
+        }
+
+        if (
+          interaction.commandName ===
+          "dice"
+        ) {
+          const amount =
+            interaction.options
+              .getInteger(
+                "amount",
+                true
+              );
+
+          const number =
+            interaction.options
+              .getInteger(
+                "number",
+                true
+              );
+
+          const slashMessage = {
+            guild:
+              interaction.guild,
+            author:
+              interaction.user,
+            reply:
+              payload =>
+                interaction.reply(
+                  payload
+                )
+          };
+
+          return playDice(
+            slashMessage,
+            [
+              String(amount),
+              String(number)
+            ]
+          );
+        }
+
+        if (
+          interaction.commandName ===
+          "slots"
+        ) {
+          const amount =
+            interaction.options
+              .getInteger(
+                "amount",
+                true
+              );
+
+          const slashMessage = {
+            guild:
+              interaction.guild,
+            author:
+              interaction.user,
+            reply:
+              payload =>
+                interaction.reply(
+                  payload
+                )
+          };
+
+          return playSlots(
+            slashMessage,
+            [
+              String(amount)
+            ]
+          );
+        }
+
         if (
           interaction.commandName ===
           "setup-xp-shop"
