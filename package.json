@@ -1,7 +1,7 @@
 {
   "name": "community-support-bot",
-  "version": "1.1.0",
-  "description": "Community Discord bot with tickets, automatic verify, Zone X style help, XP casino, button XP shop and management moderation",
+  "version": "1.2.0",
+  "description": "OM Bazaar community bot with tickets, verify, help, slash-command XP casino, XP shop and management moderation",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
