@@ -11,6 +11,14 @@ const config = require("./config");
 const commands = [
   new SlashCommandBuilder()
     .setName(
+      "setup-xp-shop"
+    )
+    .setDescription(
+      "שולח את פאנל ה־XP Shop"
+    ),
+
+  new SlashCommandBuilder()
+    .setName(
       "ticket-panel"
     )
     .setDescription(
