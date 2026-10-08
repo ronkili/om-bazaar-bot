@@ -128,3 +128,38 @@ Still using prefix:
 - !addxp / !removexp / !setxp
 
 Redeploy after replacing the files so deploy-commands.js registers the new slash commands.
+
+
+CASINO UPGRADE — SLASH ONLY:
+/casino
+/xp
+/leaderboard
+/coinflip
+/dice
+/slots
+/roulette
+/highlow
+/rps
+/number
+/wheel
+/jackpot
+/challenge
+
+CHALLENGE:
+/challenge user:<member> amount:<xp> game:<Coinflip/Dice/High Card>
+- Target gets Accept / Decline buttons.
+- Challenge expires after 2 minutes when interacted with.
+- Both users must still have enough XP at accept time.
+- Winner receives the selected XP amount from the loser.
+- Virtual server XP only.
+
+
+CHALLENGE — SCREENSHOT STYLE:
+- /challenge user:<member> amount:<xp>
+- Public message tags the challenged member.
+- Buttons: קבל את האתגר / דחה
+- Only the challenged member can click.
+- 60 second expiry.
+- On accept, both users stake the same virtual XP amount.
+- Winner is randomly selected 50/50 and receives the full pot.
+- Virtual server XP only.
