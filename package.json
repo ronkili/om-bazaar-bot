@@ -1,7 +1,7 @@
 {
   "name": "community-support-bot",
-  "version": "1.2.0",
-  "description": "OM Bazaar community bot with tickets, verify, help, slash-command XP casino, XP shop and management moderation",
+  "version": "1.3.1",
+  "description": "OM Bazaar community bot with slash XP casino, screenshot-style 1v1 XP challenge, XP shop, tickets, verify and moderation",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
