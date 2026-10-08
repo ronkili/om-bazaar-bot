@@ -1357,39 +1357,42 @@ function findShopItem(key) {
 
 function buildXpHelpEmbed() {
   return new EmbedBuilder()
-    .setColor("Blue")
+    .setColor("Purple")
     .setTitle(
-      `🎮 ${brand()} • XP & Casino`
+      `🎰 ${brand()} • Casino Center`
     )
     .setDescription(
       [
-        "כל המערכת משתמשת ב־**XP וירטואלי של השרת בלבד**.",
+        "### 🎮 Slash Casino",
+        "`/coinflip` — Heads / Tails",
+        "`/dice` — נחש מספר 1–6",
+        "`/slots` — מכונת מזל",
+        "`/roulette` — Red / Black / Green",
+        "`/highlow` — Higher / Lower",
+        "`/rps` — Rock / Paper / Scissors",
+        "`/number` — נחש מספר 1–10",
+        "`/wheel` — גלגל מכפילים",
+        "`/jackpot` — Lucky Roll גדול",
         "",
-        "**XP**",
-        "`!xp` / `!balance` — יתרה",
-        "XP מתקבל אוטומטית מהודעות רגילות.",
+        "### ⚔️ Player vs Player",
+        "`/challenge` — אתגר XP מול משתמש אחר עם Accept / Decline",
+        "משחקי Challenge: Coinflip, Dice Duel, High Card",
         "",
-        "**Casino — Slash Commands**",
-        "`/casino` — מציג את פקודות הקזינו",
-        "`/coinflip amount:<xp> side:<heads/tails>`",
-        "`/dice amount:<xp> number:<1-6>`",
-        "`/slots amount:<xp>`",
+        "### 💰 XP",
+        "`/xp` — היתרה שלך",
+        "`/leaderboard` — Top 10",
+        "`!xp` / `!balance` / `!bal` עדיין עובדים",
         "",
-        "**XP Shop**",
-        "החנות נשלחת עם `/setup-xp-shop`.",
-        "הקנייה מתבצעת דרך הכפתורים.",
+        "### 🛒 XP Shop",
+        "הנהלה שולחת את החנות עם `/setup-xp-shop`.",
         "",
-        "**Staff XP**",
-        "`!addxp @user <amount>`",
-        "`!removexp @user <amount>`",
-        "`!setxp @user <amount>`"
+        `**Max Bet:** ${formatXp(getMaxCasinoBet())} XP`,
+        `**Cooldown:** ${Math.ceil(getCasinoCooldownMs() / 1000)} שניות`
       ].join("\n")
     )
     .setFooter({
       text:
-        `Max Bet: ${formatXp(
-          getMaxCasinoBet()
-        )} XP`
+        `${brand()} • Virtual XP only`
     })
     .setTimestamp();
 }
@@ -2122,6 +2125,1255 @@ async function handleStaffXpCommand(
 }
 
 // =====================
+// MORE SLASH CASINO GAMES + CHALLENGE
+// Virtual XP only
+// =====================
+
+const activeChallenges =
+  new Map();
+
+function slashMessageFromInteraction(
+  interaction
+) {
+  return {
+    guild:
+      interaction.guild,
+    author:
+      interaction.user,
+    reply:
+      payload =>
+        interaction.reply(
+          payload
+        )
+  };
+}
+
+function casinoEmbed(
+  title,
+  description,
+  user,
+  color = "Blue"
+) {
+  const embed =
+    new EmbedBuilder()
+      .setColor(color)
+      .setTitle(title)
+      .setDescription(
+        description
+      )
+      .setTimestamp();
+
+  if (user) {
+    embed.setThumbnail(
+      user.displayAvatarURL({
+        size: 256
+      })
+    );
+  }
+
+  embed.setFooter({
+    text:
+      `${brand()} • Virtual XP Casino`
+  });
+
+  return embed;
+}
+
+function casinoCooldownReply(
+  message,
+  cooldown
+) {
+  return message.reply({
+    embeds: [
+      casinoEmbed(
+        "⏳ Casino Cooldown",
+        `חכה עוד **${Math.ceil(
+          cooldown / 1000
+        )} שניות** לפני משחק נוסף.`,
+        message.author,
+        "Orange"
+      )
+    ]
+  });
+}
+
+async function playRoulette(
+  message,
+  args
+) {
+  const cooldown =
+    checkCasinoCooldown(
+      message.guild.id,
+      message.author.id
+    );
+
+  if (cooldown > 0) {
+    return casinoCooldownReply(
+      message,
+      cooldown
+    );
+  }
+
+  const validation =
+    validateBet(
+      message.guild.id,
+      message.author.id,
+      args[0]
+    );
+
+  if (!validation.ok) {
+    return message.reply({
+      embeds: [
+        casinoEmbed(
+          "❌ Roulette",
+          validation.message,
+          message.author,
+          "Red"
+        )
+      ]
+    });
+  }
+
+  const picked =
+    String(
+      args[1] || ""
+    ).toLowerCase();
+
+  if (
+    ![
+      "red",
+      "black",
+      "green"
+    ].includes(
+      picked
+    )
+  ) {
+    return message.reply({
+      embeds: [
+        casinoEmbed(
+          "🎡 Roulette",
+          "בחר **Red**, **Black** או **Green**.",
+          message.author,
+          "Orange"
+        )
+      ]
+    });
+  }
+
+  const {
+    amount,
+    profile
+  } = validation;
+
+  profile.xp -= amount;
+
+  const number =
+    Math.floor(
+      Math.random() * 37
+    );
+
+  const redNumbers =
+    new Set([
+      1, 3, 5, 7, 9,
+      12, 14, 16, 18,
+      19, 21, 23, 25, 27,
+      30, 32, 34, 36
+    ]);
+
+  const result =
+    number === 0
+      ? "green"
+      : redNumbers.has(number)
+        ? "red"
+        : "black";
+
+  const won =
+    picked === result;
+
+  if (won) {
+    profile.xp +=
+      result === "green"
+        ? amount * 14
+        : amount * 2;
+  }
+
+  saveXpData();
+
+  const icon =
+    result === "red"
+      ? "🔴"
+      : result === "black"
+        ? "⚫"
+        : "🟢";
+
+  return message.reply({
+    embeds: [
+      casinoEmbed(
+        "🎡 Roulette",
+        [
+          `הכדור נפל על **${number} ${icon} ${result.toUpperCase()}**`,
+          "",
+          won
+            ? `✅ זכית! **${formatXp(
+                result === "green"
+                  ? amount * 13
+                  : amount
+              )} XP נטו**.`
+            : `❌ הפסדת **${formatXp(amount)} XP**.`,
+          `💰 יתרה: **${formatXp(profile.xp)} XP**`
+        ].join("\n"),
+        message.author,
+        won ? "Green" : "Red"
+      )
+    ]
+  });
+}
+
+async function playHighLow(
+  message,
+  args
+) {
+  const cooldown =
+    checkCasinoCooldown(
+      message.guild.id,
+      message.author.id
+    );
+
+  if (cooldown > 0) {
+    return casinoCooldownReply(
+      message,
+      cooldown
+    );
+  }
+
+  const validation =
+    validateBet(
+      message.guild.id,
+      message.author.id,
+      args[0]
+    );
+
+  if (!validation.ok) {
+    return message.reply({
+      embeds: [
+        casinoEmbed(
+          "❌ High / Low",
+          validation.message,
+          message.author,
+          "Red"
+        )
+      ]
+    });
+  }
+
+  const guess =
+    String(
+      args[1] || ""
+    ).toLowerCase();
+
+  if (
+    ![
+      "higher",
+      "lower"
+    ].includes(
+      guess
+    )
+  ) {
+    return message.reply({
+      embeds: [
+        casinoEmbed(
+          "🃏 High / Low",
+          "בחר **Higher** או **Lower**.",
+          message.author,
+          "Orange"
+        )
+      ]
+    });
+  }
+
+  const {
+    amount,
+    profile
+  } = validation;
+
+  profile.xp -= amount;
+
+  const first =
+    Math.floor(
+      Math.random() * 13
+    ) + 1;
+
+  const second =
+    Math.floor(
+      Math.random() * 13
+    ) + 1;
+
+  let text = "";
+  let color = "Red";
+
+  if (first === second) {
+    profile.xp += amount;
+    color = "Orange";
+    text =
+      "🤝 יצא תיקו — ההימור הוחזר.";
+  } else {
+    const actual =
+      second > first
+        ? "higher"
+        : "lower";
+
+    const won =
+      guess === actual;
+
+    if (won) {
+      profile.xp +=
+        amount * 2;
+      color = "Green";
+      text =
+        `✅ צדקת! זכית ב־**${formatXp(amount)} XP נטו**.`;
+    } else {
+      text =
+        `❌ טעית. הפסדת **${formatXp(amount)} XP**.`;
+    }
+  }
+
+  saveXpData();
+
+  return message.reply({
+    embeds: [
+      casinoEmbed(
+        "🃏 High / Low",
+        [
+          `קלף ראשון: **${first}**`,
+          `קלף שני: **${second}**`,
+          `הבחירה שלך: **${guess.toUpperCase()}**`,
+          "",
+          text,
+          `💰 יתרה: **${formatXp(profile.xp)} XP**`
+        ].join("\n"),
+        message.author,
+        color
+      )
+    ]
+  });
+}
+
+async function playRps(
+  message,
+  args
+) {
+  const cooldown =
+    checkCasinoCooldown(
+      message.guild.id,
+      message.author.id
+    );
+
+  if (cooldown > 0) {
+    return casinoCooldownReply(
+      message,
+      cooldown
+    );
+  }
+
+  const validation =
+    validateBet(
+      message.guild.id,
+      message.author.id,
+      args[0]
+    );
+
+  if (!validation.ok) {
+    return message.reply({
+      embeds: [
+        casinoEmbed(
+          "❌ Rock Paper Scissors",
+          validation.message,
+          message.author,
+          "Red"
+        )
+      ]
+    });
+  }
+
+  const picked =
+    String(
+      args[1] || ""
+    ).toLowerCase();
+
+  const choices = [
+    "rock",
+    "paper",
+    "scissors"
+  ];
+
+  if (
+    !choices.includes(
+      picked
+    )
+  ) {
+    return message.reply({
+      embeds: [
+        casinoEmbed(
+          "✊✋✌️ RPS",
+          "בחר Rock, Paper או Scissors.",
+          message.author,
+          "Orange"
+        )
+      ]
+    });
+  }
+
+  const {
+    amount,
+    profile
+  } = validation;
+
+  profile.xp -= amount;
+
+  const botChoice =
+    choices[
+      Math.floor(
+        Math.random() *
+        choices.length
+      )
+    ];
+
+  const emoji = {
+    rock: "✊",
+    paper: "✋",
+    scissors: "✌️"
+  };
+
+  let text = "";
+  let color = "Red";
+
+  if (
+    picked === botChoice
+  ) {
+    profile.xp += amount;
+    color = "Orange";
+    text =
+      "🤝 תיקו — ה־XP הוחזר.";
+  } else {
+    const won =
+      (
+        picked === "rock" &&
+        botChoice === "scissors"
+      ) ||
+      (
+        picked === "paper" &&
+        botChoice === "rock"
+      ) ||
+      (
+        picked === "scissors" &&
+        botChoice === "paper"
+      );
+
+    if (won) {
+      profile.xp +=
+        amount * 2;
+      color = "Green";
+      text =
+        `✅ ניצחת **${formatXp(amount)} XP נטו**!`;
+    } else {
+      text =
+        `❌ הפסדת **${formatXp(amount)} XP**.`;
+    }
+  }
+
+  saveXpData();
+
+  return message.reply({
+    embeds: [
+      casinoEmbed(
+        "✊✋✌️ Rock Paper Scissors",
+        [
+          `אתה: ${emoji[picked]} **${picked}**`,
+          `הבוט: ${emoji[botChoice]} **${botChoice}**`,
+          "",
+          text,
+          `💰 יתרה: **${formatXp(profile.xp)} XP**`
+        ].join("\n"),
+        message.author,
+        color
+      )
+    ]
+  });
+}
+
+async function playNumberGuess(
+  message,
+  args
+) {
+  const cooldown =
+    checkCasinoCooldown(
+      message.guild.id,
+      message.author.id
+    );
+
+  if (cooldown > 0) {
+    return casinoCooldownReply(
+      message,
+      cooldown
+    );
+  }
+
+  const validation =
+    validateBet(
+      message.guild.id,
+      message.author.id,
+      args[0]
+    );
+
+  if (!validation.ok) {
+    return message.reply({
+      embeds: [
+        casinoEmbed(
+          "❌ Lucky Number",
+          validation.message,
+          message.author,
+          "Red"
+        )
+      ]
+    });
+  }
+
+  const picked =
+    Number(
+      args[1]
+    );
+
+  if (
+    !Number.isInteger(
+      picked
+    ) ||
+    picked < 1 ||
+    picked > 10
+  ) {
+    return message.reply({
+      embeds: [
+        casinoEmbed(
+          "🔢 Lucky Number",
+          "בחר מספר בין **1 ל־10**.",
+          message.author,
+          "Orange"
+        )
+      ]
+    });
+  }
+
+  const {
+    amount,
+    profile
+  } = validation;
+
+  profile.xp -= amount;
+
+  const result =
+    Math.floor(
+      Math.random() * 10
+    ) + 1;
+
+  const won =
+    picked === result;
+
+  if (won) {
+    profile.xp +=
+      amount * 10;
+  }
+
+  saveXpData();
+
+  return message.reply({
+    embeds: [
+      casinoEmbed(
+        "🔢 Lucky Number",
+        [
+          `בחרת: **${picked}**`,
+          `המספר שיצא: **${result}**`,
+          "",
+          won
+            ? `🎉 JACKPOT קטן! זכית ב־**${formatXp(amount * 9)} XP נטו**.`
+            : `❌ לא פגעת. הפסדת **${formatXp(amount)} XP**.`,
+          `💰 יתרה: **${formatXp(profile.xp)} XP**`
+        ].join("\n"),
+        message.author,
+        won ? "Green" : "Red"
+      )
+    ]
+  });
+}
+
+async function playWheel(
+  message,
+  args
+) {
+  const cooldown =
+    checkCasinoCooldown(
+      message.guild.id,
+      message.author.id
+    );
+
+  if (cooldown > 0) {
+    return casinoCooldownReply(
+      message,
+      cooldown
+    );
+  }
+
+  const validation =
+    validateBet(
+      message.guild.id,
+      message.author.id,
+      args[0]
+    );
+
+  if (!validation.ok) {
+    return message.reply({
+      embeds: [
+        casinoEmbed(
+          "❌ Lucky Wheel",
+          validation.message,
+          message.author,
+          "Red"
+        )
+      ]
+    });
+  }
+
+  const {
+    amount,
+    profile
+  } = validation;
+
+  profile.xp -= amount;
+
+  const multipliers = [
+    0,
+    0,
+    0.5,
+    0.5,
+    1,
+    1,
+    1.5,
+    2,
+    3
+  ];
+
+  const multiplier =
+    multipliers[
+      Math.floor(
+        Math.random() *
+        multipliers.length
+      )
+    ];
+
+  const payout =
+    Math.floor(
+      amount * multiplier
+    );
+
+  profile.xp +=
+    payout;
+
+  saveXpData();
+
+  const net =
+    payout - amount;
+
+  return message.reply({
+    embeds: [
+      casinoEmbed(
+        "🎡 Lucky Wheel",
+        [
+          `המכפיל שיצא: **x${multiplier}**`,
+          `החזר: **${formatXp(payout)} XP**`,
+          "",
+          net > 0
+            ? `✅ רווח: **+${formatXp(net)} XP**`
+            : net === 0
+              ? "🤝 יצאת בלי רווח ובלי הפסד."
+              : `❌ הפסד: **${formatXp(Math.abs(net))} XP**`,
+          `💰 יתרה: **${formatXp(profile.xp)} XP**`
+        ].join("\n"),
+        message.author,
+        net > 0
+          ? "Green"
+          : net === 0
+            ? "Orange"
+            : "Red"
+      )
+    ]
+  });
+}
+
+async function playJackpot(
+  message,
+  args
+) {
+  const cooldown =
+    checkCasinoCooldown(
+      message.guild.id,
+      message.author.id
+    );
+
+  if (cooldown > 0) {
+    return casinoCooldownReply(
+      message,
+      cooldown
+    );
+  }
+
+  const validation =
+    validateBet(
+      message.guild.id,
+      message.author.id,
+      args[0]
+    );
+
+  if (!validation.ok) {
+    return message.reply({
+      embeds: [
+        casinoEmbed(
+          "❌ Jackpot",
+          validation.message,
+          message.author,
+          "Red"
+        )
+      ]
+    });
+  }
+
+  const {
+    amount,
+    profile
+  } = validation;
+
+  profile.xp -= amount;
+
+  const roll =
+    Math.floor(
+      Math.random() * 20
+    ) + 1;
+
+  const won =
+    roll === 7;
+
+  if (won) {
+    profile.xp +=
+      amount * 15;
+  }
+
+  saveXpData();
+
+  return message.reply({
+    embeds: [
+      casinoEmbed(
+        "🎰 Mega Jackpot",
+        [
+          `Lucky Roll: **${roll}/20**`,
+          "",
+          won
+            ? `👑 **JACKPOT!** זכית ב־**${formatXp(amount * 14)} XP נטו**!`
+            : `❌ לא הפעם. הפסדת **${formatXp(amount)} XP**.`,
+          `💰 יתרה: **${formatXp(profile.xp)} XP**`
+        ].join("\n"),
+        message.author,
+        won ? "Gold" : "Red"
+      )
+    ]
+  });
+}
+
+function buildLeaderboardEmbed(
+  guildId
+) {
+  const guildData =
+    getGuildXpData(
+      guildId
+    );
+
+  const top =
+    Object.entries(
+      guildData.users || {}
+    )
+      .sort(
+        (
+          [, a],
+          [, b]
+        ) =>
+          Number(b.xp || 0) -
+          Number(a.xp || 0)
+      )
+      .slice(
+        0,
+        10
+      );
+
+  const medals = [
+    "🥇",
+    "🥈",
+    "🥉"
+  ];
+
+  const lines =
+    top.length
+      ? top.map(
+          ([userId, profile], index) =>
+            `${medals[index] || `**${index + 1}.**`} <@${userId}> — **${formatXp(profile.xp)} XP**`
+        )
+      : [
+          "עדיין אין נתוני XP."
+        ];
+
+  return new EmbedBuilder()
+    .setColor("Gold")
+    .setTitle(
+      `🏆 ${brand()} • XP Leaderboard`
+    )
+    .setDescription(
+      lines.join("\n")
+    )
+    .setFooter({
+      text:
+        `${brand()} • Top 10`
+    })
+    .setTimestamp();
+}
+
+function challengeButtons(
+  id,
+  disabled = false
+) {
+  return [
+    new ActionRowBuilder()
+      .addComponents(
+        new ButtonBuilder()
+          .setCustomId(
+            `challenge_accept:${id}`
+          )
+          .setLabel(
+            "קבל את האתגר"
+          )
+          .setEmoji("✅")
+          .setStyle(
+            ButtonStyle.Success
+          )
+          .setDisabled(
+            disabled
+          ),
+
+        new ButtonBuilder()
+          .setCustomId(
+            `challenge_decline:${id}`
+          )
+          .setLabel(
+            "דחה"
+          )
+          .setEmoji("❌")
+          .setStyle(
+            ButtonStyle.Danger
+          )
+          .setDisabled(
+            disabled
+          )
+      )
+  ];
+}
+
+async function createChallenge(
+  interaction
+) {
+  const target =
+    interaction.options
+      .getUser(
+        "user",
+        true
+      );
+
+  const amount =
+    interaction.options
+      .getInteger(
+        "amount",
+        true
+      );
+
+  if (
+    target.id ===
+      interaction.user.id
+  ) {
+    return interaction.reply({
+      content:
+        "❌ אי אפשר לאתגר את עצמך.",
+      flags:
+        MessageFlags.Ephemeral
+    });
+  }
+
+  if (target.bot) {
+    return interaction.reply({
+      content:
+        "❌ אי אפשר לאתגר בוט.",
+      flags:
+        MessageFlags.Ephemeral
+    });
+  }
+
+  if (
+    amount >
+      getMaxCasinoBet()
+  ) {
+    return interaction.reply({
+      content:
+        `❌ המקסימום ל־Challenge הוא **${formatXp(getMaxCasinoBet())} XP**.`,
+      flags:
+        MessageFlags.Ephemeral
+    });
+  }
+
+  const challengerProfile =
+    getXpProfile(
+      interaction.guild.id,
+      interaction.user.id
+    );
+
+  const targetProfile =
+    getXpProfile(
+      interaction.guild.id,
+      target.id
+    );
+
+  if (
+    challengerProfile.xp <
+      amount
+  ) {
+    return interaction.reply({
+      content:
+        `❌ אין לך מספיק XP. יש לך **${formatXp(challengerProfile.xp)} XP**.`,
+      flags:
+        MessageFlags.Ephemeral
+    });
+  }
+
+  if (
+    targetProfile.xp <
+      amount
+  ) {
+    return interaction.reply({
+      content:
+        `❌ ל־${target} אין מספיק XP כדי לקבל את האתגר הזה.`,
+      flags:
+        MessageFlags.Ephemeral
+    });
+  }
+
+  const alreadyOpen =
+    [...activeChallenges.values()]
+      .some(
+        challenge =>
+          challenge.guildId ===
+            interaction.guild.id &&
+          challenge.status ===
+            "pending" &&
+          (
+            (
+              challenge.challengerId ===
+                interaction.user.id &&
+              challenge.targetId ===
+                target.id
+            ) ||
+            (
+              challenge.challengerId ===
+                target.id &&
+              challenge.targetId ===
+                interaction.user.id
+            )
+          )
+      );
+
+  if (alreadyOpen) {
+    return interaction.reply({
+      content:
+        "❌ כבר יש ביניכם Challenge פתוח.",
+      flags:
+        MessageFlags.Ephemeral
+    });
+  }
+
+  const id =
+    `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+
+  activeChallenges.set(
+    id,
+    {
+      id,
+      guildId:
+        interaction.guild.id,
+      challengerId:
+        interaction.user.id,
+      targetId:
+        target.id,
+      amount,
+      createdAt:
+        Date.now(),
+      status:
+        "pending"
+    }
+  );
+
+  const response =
+    await interaction.reply({
+      content:
+        `⚔️ ${target}, ${interaction.user} אתגר אותך להימור על **${formatXp(amount)} XP**!`,
+      components:
+        challengeButtons(
+          id
+        ),
+      allowedMentions: {
+        users: [
+          target.id,
+          interaction.user.id
+        ]
+      },
+      fetchReply: true
+    });
+
+  setTimeout(
+    async () => {
+      const challenge =
+        activeChallenges.get(
+          id
+        );
+
+      if (
+        !challenge ||
+        challenge.status !==
+          "pending"
+      ) {
+        return;
+      }
+
+      activeChallenges.delete(
+        id
+      );
+
+      await response.edit({
+        content:
+          `⌛ האתגר של <@${challenge.challengerId}> ל־<@${challenge.targetId}> על **${formatXp(challenge.amount)} XP** פג.`,
+        components:
+          challengeButtons(
+            id,
+            true
+          ),
+        allowedMentions: {
+          users: []
+        }
+      }).catch(
+        () => {}
+      );
+    },
+    60 * 1000
+  );
+
+  return;
+}
+
+async function handleChallengeButton(
+  interaction,
+  action,
+  id
+) {
+  const challenge =
+    activeChallenges.get(
+      id
+    );
+
+  if (!challenge) {
+    return interaction.reply({
+      content:
+        "❌ האתגר כבר לא פעיל.",
+      flags:
+        MessageFlags.Ephemeral
+    });
+  }
+
+  if (
+    interaction.user.id !==
+      challenge.targetId
+  ) {
+    return interaction.reply({
+      content:
+        "❌ רק המשתמש שאותגר יכול להשתמש בכפתורים האלה.",
+      flags:
+        MessageFlags.Ephemeral
+    });
+  }
+
+  if (
+    Date.now() -
+      challenge.createdAt >
+      60 * 1000
+  ) {
+    activeChallenges.delete(
+      id
+    );
+
+    return interaction.update({
+      content:
+        `⌛ האתגר של <@${challenge.challengerId}> ל־<@${challenge.targetId}> על **${formatXp(challenge.amount)} XP** פג.`,
+      components:
+        challengeButtons(
+          id,
+          true
+        ),
+      allowedMentions: {
+        users: []
+      }
+    });
+  }
+
+  if (
+    action === "decline"
+  ) {
+    activeChallenges.delete(
+      id
+    );
+
+    return interaction.update({
+      content:
+        `❌ <@${challenge.targetId}> דחה את האתגר של <@${challenge.challengerId}> על **${formatXp(challenge.amount)} XP**.`,
+      components:
+        challengeButtons(
+          id,
+          true
+        ),
+      allowedMentions: {
+        users: []
+      }
+    });
+  }
+
+  if (
+    challenge.status !==
+      "pending"
+  ) {
+    return interaction.reply({
+      content:
+        "⏳ האתגר כבר מתבצע.",
+      flags:
+        MessageFlags.Ephemeral
+    });
+  }
+
+  challenge.status =
+    "resolving";
+
+  const challengerProfile =
+    getXpProfile(
+      challenge.guildId,
+      challenge.challengerId
+    );
+
+  const targetProfile =
+    getXpProfile(
+      challenge.guildId,
+      challenge.targetId
+    );
+
+  if (
+    challengerProfile.xp <
+      challenge.amount ||
+    targetProfile.xp <
+      challenge.amount
+  ) {
+    activeChallenges.delete(
+      id
+    );
+
+    return interaction.update({
+      content:
+        "❌ האתגר בוטל כי לאחד המשתמשים כבר אין מספיק XP.",
+      components:
+        challengeButtons(
+          id,
+          true
+        )
+    });
+  }
+
+  challengerProfile.xp -=
+    challenge.amount;
+
+  targetProfile.xp -=
+    challenge.amount;
+
+  const challengerWon =
+    Math.random() < 0.5;
+
+  const winnerId =
+    challengerWon
+      ? challenge.challengerId
+      : challenge.targetId;
+
+  const loserId =
+    challengerWon
+      ? challenge.targetId
+      : challenge.challengerId;
+
+  const winnerProfile =
+    challengerWon
+      ? challengerProfile
+      : targetProfile;
+
+  winnerProfile.xp +=
+    challenge.amount * 2;
+
+  saveXpData();
+
+  activeChallenges.delete(
+    id
+  );
+
+  return interaction.update({
+    content: "",
+    embeds: [
+      new EmbedBuilder()
+        .setColor("Gold")
+        .setTitle(
+          "🏆 Challenge הסתיים!"
+        )
+        .setDescription(
+          [
+            `⚔️ <@${challenge.challengerId}> **VS** <@${challenge.targetId}>`,
+            "",
+            `🪙 **הימור:** ${formatXp(challenge.amount)} XP לכל שחקן`,
+            "",
+            `👑 **מנצח:** <@${winnerId}>`,
+            `💀 **מפסיד:** <@${loserId}>`,
+            "",
+            `💰 המנצח קיבל את הקופה: **${formatXp(challenge.amount * 2)} XP**`,
+            `📈 רווח נטו: **${formatXp(challenge.amount)} XP**`
+          ].join("\n")
+        )
+        .setFooter({
+          text:
+            `${brand()} • XP Challenge`
+        })
+        .setTimestamp()
+    ],
+    components:
+      challengeButtons(
+        id,
+        true
+      ),
+    allowedMentions: {
+      users: []
+    }
+  });
+}
+
+
+// =====================
 // HELP SYSTEM - ZONE X STYLE
 // =====================
 
@@ -2396,6 +3648,41 @@ client.on(
 
         if (
           interaction.commandName ===
+          "xp"
+        ) {
+          const profile =
+            getXpProfile(
+              interaction.guild.id,
+              interaction.user.id
+            );
+
+          return interaction.reply({
+            embeds: [
+              casinoEmbed(
+                "💰 XP Balance",
+                `יש לך **${formatXp(profile.xp)} XP**.`,
+                interaction.user,
+                "Gold"
+              )
+            ]
+          });
+        }
+
+        if (
+          interaction.commandName ===
+          "leaderboard"
+        ) {
+          return interaction.reply({
+            embeds: [
+              buildLeaderboardEmbed(
+                interaction.guild.id
+              )
+            ]
+          });
+        }
+
+        if (
+          interaction.commandName ===
           "coinflip"
         ) {
           const amount =
@@ -2412,20 +3699,10 @@ client.on(
                 true
               );
 
-          const slashMessage = {
-            guild:
-              interaction.guild,
-            author:
-              interaction.user,
-            reply:
-              payload =>
-                interaction.reply(
-                  payload
-                )
-          };
-
           return playCoinflip(
-            slashMessage,
+            slashMessageFromInteraction(
+              interaction
+            ),
             [
               String(amount),
               side
@@ -2451,20 +3728,10 @@ client.on(
                 true
               );
 
-          const slashMessage = {
-            guild:
-              interaction.guild,
-            author:
-              interaction.user,
-            reply:
-              payload =>
-                interaction.reply(
-                  payload
-                )
-          };
-
           return playDice(
-            slashMessage,
+            slashMessageFromInteraction(
+              interaction
+            ),
             [
               String(amount),
               String(number)
@@ -2483,23 +3750,180 @@ client.on(
                 true
               );
 
-          const slashMessage = {
-            guild:
-              interaction.guild,
-            author:
-              interaction.user,
-            reply:
-              payload =>
-                interaction.reply(
-                  payload
-                )
-          };
-
           return playSlots(
-            slashMessage,
+            slashMessageFromInteraction(
+              interaction
+            ),
             [
               String(amount)
             ]
+          );
+        }
+
+        if (
+          interaction.commandName ===
+          "roulette"
+        ) {
+          const amount =
+            interaction.options
+              .getInteger(
+                "amount",
+                true
+              );
+
+          const color =
+            interaction.options
+              .getString(
+                "color",
+                true
+              );
+
+          return playRoulette(
+            slashMessageFromInteraction(
+              interaction
+            ),
+            [
+              String(amount),
+              color
+            ]
+          );
+        }
+
+        if (
+          interaction.commandName ===
+          "highlow"
+        ) {
+          const amount =
+            interaction.options
+              .getInteger(
+                "amount",
+                true
+              );
+
+          const guess =
+            interaction.options
+              .getString(
+                "guess",
+                true
+              );
+
+          return playHighLow(
+            slashMessageFromInteraction(
+              interaction
+            ),
+            [
+              String(amount),
+              guess
+            ]
+          );
+        }
+
+        if (
+          interaction.commandName ===
+          "rps"
+        ) {
+          const amount =
+            interaction.options
+              .getInteger(
+                "amount",
+                true
+              );
+
+          const choice =
+            interaction.options
+              .getString(
+                "choice",
+                true
+              );
+
+          return playRps(
+            slashMessageFromInteraction(
+              interaction
+            ),
+            [
+              String(amount),
+              choice
+            ]
+          );
+        }
+
+        if (
+          interaction.commandName ===
+          "number"
+        ) {
+          const amount =
+            interaction.options
+              .getInteger(
+                "amount",
+                true
+              );
+
+          const number =
+            interaction.options
+              .getInteger(
+                "number",
+                true
+              );
+
+          return playNumberGuess(
+            slashMessageFromInteraction(
+              interaction
+            ),
+            [
+              String(amount),
+              String(number)
+            ]
+          );
+        }
+
+        if (
+          interaction.commandName ===
+          "wheel"
+        ) {
+          const amount =
+            interaction.options
+              .getInteger(
+                "amount",
+                true
+              );
+
+          return playWheel(
+            slashMessageFromInteraction(
+              interaction
+            ),
+            [
+              String(amount)
+            ]
+          );
+        }
+
+        if (
+          interaction.commandName ===
+          "jackpot"
+        ) {
+          const amount =
+            interaction.options
+              .getInteger(
+                "amount",
+                true
+              );
+
+          return playJackpot(
+            slashMessageFromInteraction(
+              interaction
+            ),
+            [
+              String(amount)
+            ]
+          );
+        }
+
+        if (
+          interaction.commandName ===
+          "challenge"
+        ) {
+          return createChallenge(
+            interaction
           );
         }
 
@@ -2934,6 +4358,46 @@ client.on(
               `✅ נמחקו **${deleted.size}** הודעות.`
           });
         }
+      }
+
+      // ---------- CHALLENGE BUTTONS ----------
+
+      if (
+        interaction.isButton() &&
+        interaction.customId.startsWith(
+          "challenge_accept:"
+        )
+      ) {
+        const id =
+          interaction.customId
+            .split(":")
+            .slice(1)
+            .join(":");
+
+        return handleChallengeButton(
+          interaction,
+          "accept",
+          id
+        );
+      }
+
+      if (
+        interaction.isButton() &&
+        interaction.customId.startsWith(
+          "challenge_decline:"
+        )
+      ) {
+        const id =
+          interaction.customId
+            .split(":")
+            .slice(1)
+            .join(":");
+
+        return handleChallengeButton(
+          interaction,
+          "decline",
+          id
+        );
       }
 
       // ---------- XP SHOP ----------
