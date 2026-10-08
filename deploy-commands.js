@@ -14,7 +14,23 @@ const commands = [
       "casino"
     )
     .setDescription(
-      "מציג את פקודות הקזינו"
+      "מציג את כל פקודות הקזינו"
+    ),
+
+  new SlashCommandBuilder()
+    .setName(
+      "xp"
+    )
+    .setDescription(
+      "מציג את יתרת ה־XP שלך"
+    ),
+
+  new SlashCommandBuilder()
+    .setName(
+      "leaderboard"
+    )
+    .setDescription(
+      "מציג את Top 10 של ה־XP"
     ),
 
   new SlashCommandBuilder()
@@ -22,45 +38,25 @@ const commands = [
       "coinflip"
     )
     .setDescription(
-      "הימור Coinflip עם XP"
+      "Coinflip עם XP"
     )
     .addIntegerOption(
       option =>
         option
-          .setName(
-            "amount"
-          )
-          .setDescription(
-            "כמות XP להימור"
-          )
-          .setRequired(
-            true
-          )
-          .setMinValue(
-            1
-          )
+          .setName("amount")
+          .setDescription("כמות XP להימור")
+          .setRequired(true)
+          .setMinValue(1)
     )
     .addStringOption(
       option =>
         option
-          .setName(
-            "side"
-          )
-          .setDescription(
-            "Heads או Tails"
-          )
-          .setRequired(
-            true
-          )
+          .setName("side")
+          .setDescription("Heads או Tails")
+          .setRequired(true)
           .addChoices(
-            {
-              name: "Heads",
-              value: "heads"
-            },
-            {
-              name: "Tails",
-              value: "tails"
-            }
+            { name: "Heads", value: "heads" },
+            { name: "Tails", value: "tails" }
           )
     ),
 
@@ -69,42 +65,24 @@ const commands = [
       "dice"
     )
     .setDescription(
-      "נחש מספר בקובייה עם XP"
+      "נחש מספר בקובייה"
     )
     .addIntegerOption(
       option =>
         option
-          .setName(
-            "amount"
-          )
-          .setDescription(
-            "כמות XP להימור"
-          )
-          .setRequired(
-            true
-          )
-          .setMinValue(
-            1
-          )
+          .setName("amount")
+          .setDescription("כמות XP להימור")
+          .setRequired(true)
+          .setMinValue(1)
     )
     .addIntegerOption(
       option =>
         option
-          .setName(
-            "number"
-          )
-          .setDescription(
-            "בחר מספר בין 1 ל־6"
-          )
-          .setRequired(
-            true
-          )
-          .setMinValue(
-            1
-          )
-          .setMaxValue(
-            6
-          )
+          .setName("number")
+          .setDescription("מספר בין 1 ל־6")
+          .setRequired(true)
+          .setMinValue(1)
+          .setMaxValue(6)
     ),
 
   new SlashCommandBuilder()
@@ -112,23 +90,178 @@ const commands = [
       "slots"
     )
     .setDescription(
-      "Slots עם XP"
+      "מכונת Slots עם XP"
     )
     .addIntegerOption(
       option =>
         option
-          .setName(
-            "amount"
+          .setName("amount")
+          .setDescription("כמות XP להימור")
+          .setRequired(true)
+          .setMinValue(1)
+    ),
+
+  new SlashCommandBuilder()
+    .setName(
+      "roulette"
+    )
+    .setDescription(
+      "Roulette — Red / Black / Green"
+    )
+    .addIntegerOption(
+      option =>
+        option
+          .setName("amount")
+          .setDescription("כמות XP להימור")
+          .setRequired(true)
+          .setMinValue(1)
+    )
+    .addStringOption(
+      option =>
+        option
+          .setName("color")
+          .setDescription("בחר צבע")
+          .setRequired(true)
+          .addChoices(
+            { name: "🔴 Red", value: "red" },
+            { name: "⚫ Black", value: "black" },
+            { name: "🟢 Green", value: "green" }
           )
-          .setDescription(
-            "כמות XP להימור"
+    ),
+
+  new SlashCommandBuilder()
+    .setName(
+      "highlow"
+    )
+    .setDescription(
+      "נחש אם הקלף הבא גבוה או נמוך"
+    )
+    .addIntegerOption(
+      option =>
+        option
+          .setName("amount")
+          .setDescription("כמות XP להימור")
+          .setRequired(true)
+          .setMinValue(1)
+    )
+    .addStringOption(
+      option =>
+        option
+          .setName("guess")
+          .setDescription("Higher או Lower")
+          .setRequired(true)
+          .addChoices(
+            { name: "⬆️ Higher", value: "higher" },
+            { name: "⬇️ Lower", value: "lower" }
           )
-          .setRequired(
-            true
+    ),
+
+  new SlashCommandBuilder()
+    .setName(
+      "rps"
+    )
+    .setDescription(
+      "Rock Paper Scissors מול הבוט"
+    )
+    .addIntegerOption(
+      option =>
+        option
+          .setName("amount")
+          .setDescription("כמות XP להימור")
+          .setRequired(true)
+          .setMinValue(1)
+    )
+    .addStringOption(
+      option =>
+        option
+          .setName("choice")
+          .setDescription("בחר מהלך")
+          .setRequired(true)
+          .addChoices(
+            { name: "✊ Rock", value: "rock" },
+            { name: "✋ Paper", value: "paper" },
+            { name: "✌️ Scissors", value: "scissors" }
           )
-          .setMinValue(
-            1
-          )
+    ),
+
+  new SlashCommandBuilder()
+    .setName(
+      "number"
+    )
+    .setDescription(
+      "Lucky Number — נחש מספר 1 עד 10"
+    )
+    .addIntegerOption(
+      option =>
+        option
+          .setName("amount")
+          .setDescription("כמות XP להימור")
+          .setRequired(true)
+          .setMinValue(1)
+    )
+    .addIntegerOption(
+      option =>
+        option
+          .setName("number")
+          .setDescription("מספר בין 1 ל־10")
+          .setRequired(true)
+          .setMinValue(1)
+          .setMaxValue(10)
+    ),
+
+  new SlashCommandBuilder()
+    .setName(
+      "wheel"
+    )
+    .setDescription(
+      "גלגל מכפילי XP"
+    )
+    .addIntegerOption(
+      option =>
+        option
+          .setName("amount")
+          .setDescription("כמות XP להימור")
+          .setRequired(true)
+          .setMinValue(1)
+    ),
+
+  new SlashCommandBuilder()
+    .setName(
+      "jackpot"
+    )
+    .setDescription(
+      "Mega Jackpot — Lucky Roll"
+    )
+    .addIntegerOption(
+      option =>
+        option
+          .setName("amount")
+          .setDescription("כמות XP להימור")
+          .setRequired(true)
+          .setMinValue(1)
+    ),
+
+  new SlashCommandBuilder()
+    .setName(
+      "challenge"
+    )
+    .setDescription(
+      "מאתגר משתמש להימור 1V1 על XP"
+    )
+    .addUserOption(
+      option =>
+        option
+          .setName("user")
+          .setDescription("את מי לאתגר")
+          .setRequired(true)
+    )
+    .addIntegerOption(
+      option =>
+        option
+          .setName("amount")
+          .setDescription("כמות XP שכל שחקן שם")
+          .setRequired(true)
+          .setMinValue(1)
     ),
 
   new SlashCommandBuilder()
