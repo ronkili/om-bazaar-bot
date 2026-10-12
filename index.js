@@ -3374,6 +3374,560 @@ async function handleChallengeButton(
 
 
 // =====================
+// APPLY FOR STAFF
+// =====================
+
+const staffApplicationDrafts =
+  new Map();
+
+function staffApplicationKey(
+  guildId,
+  userId
+) {
+  return `${guildId}:${userId}`;
+}
+
+function isStaffTester(
+  member
+) {
+  if (!member) {
+    return false;
+  }
+
+  return Boolean(
+    config.staffTesterRoleId &&
+    !String(
+      config.staffTesterRoleId
+    ).startsWith(
+      "PUT_"
+    ) &&
+    member.roles.cache.has(
+      config.staffTesterRoleId
+    )
+  );
+}
+
+function staffApplyPanel() {
+  return {
+    embeds: [
+      new EmbedBuilder()
+        .setColor("Blue")
+        .setTitle(
+          `📝 ${brand()} • Apply For Staff`
+        )
+        .setDescription(
+          [
+            "רוצים להצטרף לצוות?",
+            "",
+            "לחצו על הכפתור למטה ומלאו את הטופס.",
+            "",
+            "### דרישות",
+            "🔹 גיל **13 ומעלה**",
+            "🔹 להיות פעילים בשיחות",
+            "🔹 לדעת להתמודד עם סיטואציות בסיסיות",
+            "🔹 לענות בכנות",
+            "",
+            "הטופס מחולק ל־**2 שלבים קצרים**."
+          ].join("\n")
+        )
+        .setFooter({
+          text:
+            `${brand()} • Staff Applications`
+        })
+        .setTimestamp()
+    ],
+
+    components: [
+      new ActionRowBuilder()
+        .addComponents(
+          new ButtonBuilder()
+            .setCustomId(
+              "staff_apply_start"
+            )
+            .setLabel(
+              "הגש בקשה לצוות"
+            )
+            .setEmoji("📝")
+            .setStyle(
+              ButtonStyle.Primary
+            )
+        )
+    ]
+  };
+}
+
+function buildStaffApplyStepOneModal() {
+  const modal =
+    new ModalBuilder()
+      .setCustomId(
+        "staff_apply_step1"
+      )
+      .setTitle(
+        "Apply For Staff • שלב 1"
+      );
+
+  const name =
+    new TextInputBuilder()
+      .setCustomId(
+        "name"
+      )
+      .setLabel(
+        "מה השם שלך?"
+      )
+      .setStyle(
+        TextInputStyle.Short
+      )
+      .setMaxLength(
+        50
+      )
+      .setRequired(
+        true
+      );
+
+  const age =
+    new TextInputBuilder()
+      .setCustomId(
+        "age"
+      )
+      .setLabel(
+        "בן כמה אתה? (חובה 13 ומעלה)"
+      )
+      .setStyle(
+        TextInputStyle.Short
+      )
+      .setMaxLength(
+        3
+      )
+      .setRequired(
+        true
+      );
+
+  const hours =
+    new TextInputBuilder()
+      .setCustomId(
+        "hours"
+      )
+      .setLabel(
+        "כמה שעות תוכל להיות בשיחות ביום?"
+      )
+      .setStyle(
+        TextInputStyle.Short
+      )
+      .setMaxLength(
+        100
+      )
+      .setRequired(
+        true
+      );
+
+  const voiceInsult =
+    new TextInputBuilder()
+      .setCustomId(
+        "voice_insult"
+      )
+      .setLabel(
+        "אם מישהו מקלל בוויס מה תעשה?"
+      )
+      .setStyle(
+        TextInputStyle.Paragraph
+      )
+      .setMaxLength(
+        500
+      )
+      .setRequired(
+        true
+      );
+
+  const chatInsult =
+    new TextInputBuilder()
+      .setCustomId(
+        "chat_insult"
+      )
+      .setLabel(
+        "אם מישהו מקלל בצאט מה תעשה?"
+      )
+      .setStyle(
+        TextInputStyle.Paragraph
+      )
+      .setMaxLength(
+        500
+      )
+      .setRequired(
+        true
+      );
+
+  modal.addComponents(
+    new ActionRowBuilder()
+      .addComponents(
+        name
+      ),
+    new ActionRowBuilder()
+      .addComponents(
+        age
+      ),
+    new ActionRowBuilder()
+      .addComponents(
+        hours
+      ),
+    new ActionRowBuilder()
+      .addComponents(
+        voiceInsult
+      ),
+    new ActionRowBuilder()
+      .addComponents(
+        chatInsult
+      )
+  );
+
+  return modal;
+}
+
+function buildStaffApplyStepTwoModal() {
+  const modal =
+    new ModalBuilder()
+      .setCustomId(
+        "staff_apply_step2"
+      )
+      .setTitle(
+        "Apply For Staff • שלב 2"
+      );
+
+  const accessAbuse =
+    new TextInputBuilder()
+      .setCustomId(
+        "access_abuse"
+      )
+      .setLabel(
+        "צוות בכיר ממך מנצל גישות - מה תעשה?"
+      )
+      .setStyle(
+        TextInputStyle.Paragraph
+      )
+      .setMaxLength(
+        700
+      )
+      .setRequired(
+        true
+      );
+
+  const micEating =
+    new TextInputBuilder()
+      .setCustomId(
+        "mic_eating"
+      )
+      .setLabel(
+        "מישהו עושה אייריפ בוויס - מה תעשה?"
+      )
+      .setStyle(
+        TextInputStyle.Paragraph
+      )
+      .setMaxLength(
+        500
+      )
+      .setRequired(
+        true
+      );
+
+  const extra =
+    new TextInputBuilder()
+      .setCustomId(
+        "extra"
+      )
+      .setLabel(
+        "יש משהו נוסף שתרצה שנדע?"
+      )
+      .setStyle(
+        TextInputStyle.Paragraph
+      )
+      .setMaxLength(
+        1000
+      )
+      .setRequired(
+        false
+      );
+
+  modal.addComponents(
+    new ActionRowBuilder()
+      .addComponents(
+        accessAbuse
+      ),
+    new ActionRowBuilder()
+      .addComponents(
+        micEating
+      ),
+    new ActionRowBuilder()
+      .addComponents(
+        extra
+      )
+  );
+
+  return modal;
+}
+
+function applicationTopic({
+  owner,
+  claimed = ""
+}) {
+  return [
+    "staffApplication=1",
+    `owner=${owner}`,
+    `claimed=${claimed}`
+  ].join(";");
+}
+
+function staffApplicationControls(
+  claimed = ""
+) {
+  return [
+    new ActionRowBuilder()
+      .addComponents(
+        new ButtonBuilder()
+          .setCustomId(
+            claimed
+              ? "staff_apply_release"
+              : "staff_apply_claim"
+          )
+          .setLabel(
+            claimed
+              ? "שחרר"
+              : "קח את הטיקט"
+          )
+          .setEmoji(
+            claimed
+              ? "🔓"
+              : "🛡️"
+          )
+          .setStyle(
+            claimed
+              ? ButtonStyle.Secondary
+              : ButtonStyle.Success
+          ),
+
+        new ButtonBuilder()
+          .setCustomId(
+            "staff_apply_accept"
+          )
+          .setLabel(
+            "קבל"
+          )
+          .setEmoji("✅")
+          .setStyle(
+            ButtonStyle.Success
+          ),
+
+        new ButtonBuilder()
+          .setCustomId(
+            "staff_apply_reject"
+          )
+          .setLabel(
+            "דחה"
+          )
+          .setEmoji("❌")
+          .setStyle(
+            ButtonStyle.Danger
+          ),
+
+        new ButtonBuilder()
+          .setCustomId(
+            "staff_apply_close"
+          )
+          .setLabel(
+            "סגור"
+          )
+          .setEmoji("🔒")
+          .setStyle(
+            ButtonStyle.Secondary
+          )
+      )
+  ];
+}
+
+async function createStaffApplicationTicket(
+  interaction,
+  answers
+) {
+  const guild =
+    interaction.guild;
+
+  const category =
+    guild.channels.cache.get(
+      config.ticketCategoryId
+    );
+
+  if (
+    !category ||
+    category.type !==
+      ChannelType.GuildCategory
+  ) {
+    throw new Error(
+      "STAFF_APPLY_CATEGORY_INVALID"
+    );
+  }
+
+  if (
+    !config.staffTesterRoleId ||
+    String(
+      config.staffTesterRoleId
+    ).startsWith(
+      "PUT_"
+    )
+  ) {
+    throw new Error(
+      "STAFF_TESTER_ROLE_MISSING"
+    );
+  }
+
+  const testerRole =
+    await guild.roles
+      .fetch(
+        config.staffTesterRoleId
+      )
+      .catch(
+        () => null
+      );
+
+  if (!testerRole) {
+    throw new Error(
+      "STAFF_TESTER_ROLE_NOT_FOUND"
+    );
+  }
+
+  const existing =
+    guild.channels.cache.find(
+      channel => {
+        const data =
+          parseTicketTopic(
+            channel
+          );
+
+        return (
+          data.staffApplication ===
+            "1" &&
+          data.owner ===
+            interaction.user.id
+        );
+      }
+    );
+
+  if (existing) {
+    throw new Error(
+      "STAFF_APPLICATION_EXISTS"
+    );
+  }
+
+  const channel =
+    await guild.channels.create({
+      name:
+        `staff-${safeChannelName(
+          interaction.user.username
+        )}`,
+
+      type:
+        ChannelType.GuildText,
+
+      parent:
+        category.id,
+
+      topic:
+        applicationTopic({
+          owner:
+            interaction.user.id
+        }),
+
+      permissionOverwrites: [
+        {
+          id:
+            guild.id,
+          deny: [
+            PermissionFlagsBits.ViewChannel
+          ]
+        },
+        {
+          id:
+            interaction.user.id,
+          allow: [
+            PermissionFlagsBits.ViewChannel,
+            PermissionFlagsBits.SendMessages,
+            PermissionFlagsBits.ReadMessageHistory,
+            PermissionFlagsBits.AttachFiles,
+            PermissionFlagsBits.EmbedLinks
+          ]
+        },
+        {
+          id:
+            testerRole.id,
+          allow: [
+            PermissionFlagsBits.ViewChannel,
+            PermissionFlagsBits.SendMessages,
+            PermissionFlagsBits.ReadMessageHistory,
+            PermissionFlagsBits.ManageMessages
+          ]
+        }
+      ]
+    });
+
+  const answerEmbed =
+    new EmbedBuilder()
+      .setColor("Blue")
+      .setTitle(
+        "📝 בקשת הצטרפות לצוות"
+      )
+      .setDescription(
+        [
+          `👤 **מגיש:** ${interaction.user}`,
+          `🆔 **ID:** \`${interaction.user.id}\``,
+          "",
+          `**1. מה השם שלך?**\n${answers.name}`,
+          "",
+          `**2. בן כמה אתה?**\n${answers.age}`,
+          "",
+          `**3. כמה שעות תוכל להיות בשיחות ביום?**\n${answers.hours}`,
+          "",
+          `**4. אם מישהו מקלל בוויס מה תעשה?**\n${answers.voiceInsult}`,
+          "",
+          `**5. אם מישהו מקלל בצאט מה תעשה?**\n${answers.chatInsult}`,
+          "",
+          `**6. אם צוות בכיר ממך מנצל גישות איך תפעל?**\n${answers.accessAbuse}`,
+          "",
+          `**7. אם מישהו עושה אייריפ בוויס מה תעשה?**\n${answers.micEating}`,
+          "",
+          `**8. משהו נוסף שתרצה שנדע?**\n${answers.extra || "אין"}`
+        ].join("\n")
+      )
+      .setThumbnail(
+        interaction.user
+          .displayAvatarURL({
+            size: 256
+          })
+      )
+      .setFooter({
+        text:
+          `${brand()} • Staff Application`
+      })
+      .setTimestamp();
+
+  await channel.send({
+    content:
+      `<@&${testerRole.id}>`,
+
+    embeds: [
+      answerEmbed
+    ],
+
+    components:
+      staffApplicationControls(),
+
+    allowedMentions: {
+      roles: [
+        testerRole.id
+      ]
+    }
+  });
+
+  return channel;
+}
+
+// =====================
 // HELP SYSTEM - ZONE X STYLE
 // =====================
 
@@ -3971,6 +4525,36 @@ client.on(
 
         if (
           interaction.commandName ===
+          "staff-apply-panel"
+        ) {
+          if (
+            !isManagement(
+              interaction.member,
+              interaction.guild
+            )
+          ) {
+            return interaction.reply({
+              content:
+                "❌ רק הנהלה יכולה לשלוח את פאנל ה־Apply For Staff.",
+              flags:
+                MessageFlags.Ephemeral
+            });
+          }
+
+          await interaction.channel.send(
+            staffApplyPanel()
+          );
+
+          return interaction.reply({
+            content:
+              "✅ פאנל Apply For Staff נשלח.",
+            flags:
+              MessageFlags.Ephemeral
+          });
+        }
+
+        if (
+          interaction.commandName ===
           "ticket-panel"
         ) {
           if (
@@ -4398,6 +4982,581 @@ client.on(
           "decline",
           id
         );
+      }
+
+      // ---------- APPLY FOR STAFF ----------
+
+      if (
+        interaction.isButton() &&
+        interaction.customId ===
+          "staff_apply_start"
+      ) {
+        const existing =
+          interaction.guild.channels.cache.find(
+            channel => {
+              const data =
+                parseTicketTopic(
+                  channel
+                );
+
+              return (
+                data.staffApplication ===
+                  "1" &&
+                data.owner ===
+                  interaction.user.id
+              );
+            }
+          );
+
+        if (existing) {
+          return interaction.reply({
+            content:
+              `❌ כבר יש לך בקשת צוות פתוחה: ${existing}`,
+            flags:
+              MessageFlags.Ephemeral
+          });
+        }
+
+        return interaction.showModal(
+          buildStaffApplyStepOneModal()
+        );
+      }
+
+      if (
+        interaction.isButton() &&
+        interaction.customId ===
+          "staff_apply_continue"
+      ) {
+        const key =
+          staffApplicationKey(
+            interaction.guild.id,
+            interaction.user.id
+          );
+
+        if (
+          !staffApplicationDrafts.has(
+            key
+          )
+        ) {
+          return interaction.reply({
+            content:
+              "❌ הטופס הקודם כבר לא קיים. התחל מחדש.",
+            flags:
+              MessageFlags.Ephemeral
+          });
+        }
+
+        return interaction.showModal(
+          buildStaffApplyStepTwoModal()
+        );
+      }
+
+      if (
+        interaction.isModalSubmit() &&
+        interaction.customId ===
+          "staff_apply_step1"
+      ) {
+        const name =
+          interaction.fields
+            .getTextInputValue(
+              "name"
+            )
+            .trim();
+
+        const ageText =
+          interaction.fields
+            .getTextInputValue(
+              "age"
+            )
+            .trim();
+
+        const age =
+          Number(
+            ageText
+          );
+
+        if (
+          !Number.isInteger(
+            age
+          ) ||
+          age < 13 ||
+          age > 100
+        ) {
+          return interaction.reply({
+            content:
+              "❌ בשביל להגיש בקשה צריך להיות **בן 13 ומעלה** ולרשום גיל תקין.",
+            flags:
+              MessageFlags.Ephemeral
+          });
+        }
+
+        const key =
+          staffApplicationKey(
+            interaction.guild.id,
+            interaction.user.id
+          );
+
+        staffApplicationDrafts.set(
+          key,
+          {
+            name,
+            age,
+            hours:
+              interaction.fields
+                .getTextInputValue(
+                  "hours"
+                )
+                .trim(),
+
+            voiceInsult:
+              interaction.fields
+                .getTextInputValue(
+                  "voice_insult"
+                )
+                .trim(),
+
+            chatInsult:
+              interaction.fields
+                .getTextInputValue(
+                  "chat_insult"
+                )
+                .trim(),
+
+            createdAt:
+              Date.now()
+          }
+        );
+
+        return interaction.reply({
+          content:
+            "✅ שלב 1 נשמר. לחץ כדי להמשיך לשלב האחרון.",
+
+          components: [
+            new ActionRowBuilder()
+              .addComponents(
+                new ButtonBuilder()
+                  .setCustomId(
+                    "staff_apply_continue"
+                  )
+                  .setLabel(
+                    "המשך לשלב 2"
+                  )
+                  .setEmoji("➡️")
+                  .setStyle(
+                    ButtonStyle.Primary
+                  )
+              )
+          ],
+
+          flags:
+            MessageFlags.Ephemeral
+        });
+      }
+
+      if (
+        interaction.isModalSubmit() &&
+        interaction.customId ===
+          "staff_apply_step2"
+      ) {
+        const key =
+          staffApplicationKey(
+            interaction.guild.id,
+            interaction.user.id
+          );
+
+        const draft =
+          staffApplicationDrafts.get(
+            key
+          );
+
+        if (!draft) {
+          return interaction.reply({
+            content:
+              "❌ שלב 1 לא נמצא. התחל מחדש מהפאנל.",
+            flags:
+              MessageFlags.Ephemeral
+          });
+        }
+
+        const answers = {
+          ...draft,
+
+          accessAbuse:
+            interaction.fields
+              .getTextInputValue(
+                "access_abuse"
+              )
+              .trim(),
+
+          micEating:
+            interaction.fields
+              .getTextInputValue(
+                "mic_eating"
+              )
+              .trim(),
+
+          extra:
+            interaction.fields
+              .getTextInputValue(
+                "extra"
+              )
+              .trim()
+        };
+
+        await interaction.deferReply({
+          flags:
+            MessageFlags.Ephemeral
+        });
+
+        try {
+          const channel =
+            await createStaffApplicationTicket(
+              interaction,
+              answers
+            );
+
+          staffApplicationDrafts.delete(
+            key
+          );
+
+          return interaction.editReply({
+            content:
+              `✅ הבקשה נשלחה בהצלחה: ${channel}`
+          });
+        } catch (error) {
+          console.error(
+            "❌ Staff application create:",
+            error
+          );
+
+          const messages = {
+            STAFF_APPLY_CATEGORY_INVALID:
+              "❌ `ticketCategoryId` לא מוגדר על Category תקינה.",
+            STAFF_TESTER_ROLE_MISSING:
+              "❌ חסר `staffTesterRoleId` ב־config.js.",
+            STAFF_TESTER_ROLE_NOT_FOUND:
+              "❌ רול Staff Tester לא נמצא.",
+            STAFF_APPLICATION_EXISTS:
+              "❌ כבר יש לך בקשת צוות פתוחה."
+          };
+
+          return interaction.editReply({
+            content:
+              messages[
+                error.message
+              ] ||
+              "❌ לא הצלחתי לפתוח את טיקט הבקשה."
+          });
+        }
+      }
+
+      if (
+        interaction.isButton() &&
+        (
+          interaction.customId ===
+            "staff_apply_claim" ||
+          interaction.customId ===
+            "staff_apply_release" ||
+          interaction.customId ===
+            "staff_apply_accept" ||
+          interaction.customId ===
+            "staff_apply_reject" ||
+          interaction.customId ===
+            "staff_apply_close"
+        )
+      ) {
+        if (
+          !isStaffTester(
+            interaction.member
+          )
+        ) {
+          return interaction.reply({
+            content:
+              "❌ רק רול **Staff Tester** יכול לטפל בבקשות האלה.",
+            flags:
+              MessageFlags.Ephemeral
+          });
+        }
+
+        const data =
+          parseTicketTopic(
+            interaction.channel
+          );
+
+        if (
+          data.staffApplication !==
+          "1"
+        ) {
+          return interaction.reply({
+            content:
+              "❌ זה לא טיקט Apply For Staff.",
+            flags:
+              MessageFlags.Ephemeral
+          });
+        }
+
+        if (
+          interaction.customId ===
+          "staff_apply_claim"
+        ) {
+          if (data.claimed) {
+            return interaction.reply({
+              content:
+                `❌ הטיקט כבר נלקח על ידי <@${data.claimed}>.`,
+              flags:
+                MessageFlags.Ephemeral
+            });
+          }
+
+          await interaction.channel
+            .setTopic(
+              applicationTopic({
+                owner:
+                  data.owner,
+                claimed:
+                  interaction.user.id
+              })
+            );
+
+          await interaction.update({
+            components:
+              staffApplicationControls(
+                interaction.user.id
+              )
+          });
+
+          await interaction.channel.send({
+            content:
+              `🛡️ הבקשה נלקחה על ידי ${interaction.user}.`
+          });
+
+          return;
+        }
+
+        if (
+          interaction.customId ===
+          "staff_apply_release"
+        ) {
+          if (
+            data.claimed &&
+            data.claimed !==
+              interaction.user.id
+          ) {
+            return interaction.reply({
+              content:
+                "❌ רק מי שלקח את הטיקט יכול לשחרר אותו.",
+              flags:
+                MessageFlags.Ephemeral
+            });
+          }
+
+          await interaction.channel
+            .setTopic(
+              applicationTopic({
+                owner:
+                  data.owner,
+                claimed: ""
+              })
+            );
+
+          await interaction.update({
+            components:
+              staffApplicationControls()
+          });
+
+          await interaction.channel.send({
+            content:
+              `🔓 ${interaction.user} שחרר את הבקשה.`
+          });
+
+          return;
+        }
+
+        if (
+          !data.claimed ||
+          data.claimed !==
+            interaction.user.id
+        ) {
+          return interaction.reply({
+            content:
+              "❌ קודם צריך לעשות **קח את הטיקט**. רק ה־Staff Tester שלקח אותו יכול להמשיך.",
+            flags:
+              MessageFlags.Ephemeral
+          });
+        }
+
+        if (
+          interaction.customId ===
+          "staff_apply_accept"
+        ) {
+          await interaction.channel.send({
+            embeds: [
+              new EmbedBuilder()
+                .setColor("Green")
+                .setTitle(
+                  "✅ הבקשה התקבלה"
+                )
+                .setDescription(
+                  [
+                    `<@${data.owner}> הבקשה שלך לצוות **התקבלה**.`,
+                    "",
+                    `🛡️ טופל על ידי ${interaction.user}`,
+                    "",
+                    "המשך התהליך יתבצע מול הצוות."
+                  ].join("\n")
+                )
+                .setTimestamp()
+            ]
+          });
+
+          return interaction.reply({
+            content:
+              "✅ הבקשה סומנה כהתקבלה.",
+            flags:
+              MessageFlags.Ephemeral
+          });
+        }
+
+        if (
+          interaction.customId ===
+          "staff_apply_reject"
+        ) {
+          const modal =
+            new ModalBuilder()
+              .setCustomId(
+                "staff_apply_reject_modal"
+              )
+              .setTitle(
+                "דחיית בקשת צוות"
+              );
+
+          const reason =
+            new TextInputBuilder()
+              .setCustomId(
+                "reason"
+              )
+              .setLabel(
+                "סיבת הדחייה"
+              )
+              .setStyle(
+                TextInputStyle.Paragraph
+              )
+              .setMaxLength(
+                500
+              )
+              .setRequired(
+                true
+              );
+
+          modal.addComponents(
+            new ActionRowBuilder()
+              .addComponents(
+                reason
+              )
+          );
+
+          return interaction.showModal(
+            modal
+          );
+        }
+
+        if (
+          interaction.customId ===
+          "staff_apply_close"
+        ) {
+          await interaction.reply({
+            content:
+              "🔒 סוגר את טיקט הבקשה...",
+            flags:
+              MessageFlags.Ephemeral
+          });
+
+          setTimeout(
+            () => {
+              interaction.channel
+                .delete(
+                  `Staff application closed by ${interaction.user.tag}`
+                )
+                .catch(
+                  () => {}
+                );
+            },
+            1500
+          );
+
+          return;
+        }
+      }
+
+      if (
+        interaction.isModalSubmit() &&
+        interaction.customId ===
+          "staff_apply_reject_modal"
+      ) {
+        if (
+          !isStaffTester(
+            interaction.member
+          )
+        ) {
+          return interaction.reply({
+            content:
+              "❌ רק Staff Tester יכול לדחות בקשה.",
+            flags:
+              MessageFlags.Ephemeral
+          });
+        }
+
+        const data =
+          parseTicketTopic(
+            interaction.channel
+          );
+
+        if (
+          data.staffApplication !==
+            "1" ||
+          data.claimed !==
+            interaction.user.id
+        ) {
+          return interaction.reply({
+            content:
+              "❌ אתה צריך לקחת את הטיקט לפני שאתה דוחה אותו.",
+            flags:
+              MessageFlags.Ephemeral
+          });
+        }
+
+        const reason =
+          interaction.fields
+            .getTextInputValue(
+              "reason"
+            )
+            .trim();
+
+        await interaction.channel.send({
+          embeds: [
+            new EmbedBuilder()
+              .setColor("Red")
+              .setTitle(
+                "❌ הבקשה נדחתה"
+              )
+              .setDescription(
+                [
+                  `<@${data.owner}> הבקשה שלך לצוות **נדחתה**.`,
+                  "",
+                  `📝 **סיבה:** ${reason}`,
+                  `🛡️ טופל על ידי ${interaction.user}`
+                ].join("\n")
+              )
+              .setTimestamp()
+          ]
+        });
+
+        return interaction.reply({
+          content:
+            "✅ הבקשה סומנה כנדחתה.",
+          flags:
+            MessageFlags.Ephemeral
+        });
       }
 
       // ---------- XP SHOP ----------
