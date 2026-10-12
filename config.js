@@ -23,10 +23,13 @@ module.exports = {
   staffRoleId:
     "1559228267939233912",
 
-
-  // הנהלה בלבד
+  // רק הרול הזה + Admin יכולים להשתמש במודרציה וב־Setup Verify
   managementRoleId:
     "1557704800521691207",
+
+  // רק הרול הזה יכול לקחת ולטפל בטיקט Apply For Staff
+  staffTesterRoleId:
+    "1559241467766116502",
 
   // =====================
   // VERIFY
