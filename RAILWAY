@@ -163,3 +163,35 @@ CHALLENGE — SCREENSHOT STYLE:
 - On accept, both users stake the same virtual XP amount.
 - Winner is randomly selected 50/50 and receives the full pot.
 - Virtual server XP only.
+
+
+APPLY FOR STAFF:
+Command:
+/staff-apply-panel
+
+Flow:
+1. User clicks "הגש בקשה לצוות".
+2. Step 1 asks:
+   - Name
+   - Age (13+ required)
+   - Daily voice hours
+   - Voice insult situation
+   - Chat insult situation
+3. Step 2 asks:
+   - Higher staff abusing access
+   - Mic eating / ear-rape situation
+   - Anything else
+4. A private application ticket opens in ticketCategoryId.
+
+STAFF TESTER:
+Fill:
+staffTesterRoleId: "ROLE_ID"
+
+Only this role can:
+- Claim application
+- Release it
+- Accept
+- Reject
+- Close
+
+The applicant can see and write in their own application ticket.
