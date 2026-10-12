@@ -274,6 +274,14 @@ const commands = [
 
   new SlashCommandBuilder()
     .setName(
+      "staff-apply-panel"
+    )
+    .setDescription(
+      "שולח את פאנל Apply For Staff"
+    ),
+
+  new SlashCommandBuilder()
+    .setName(
       "ticket-panel"
     )
     .setDescription(
